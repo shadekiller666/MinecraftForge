@@ -375,6 +375,7 @@ public class ModelLoaderRegistryDebug
             super(Material.iron);
             setCreativeTab(CreativeTabs.tabBlock);
             setUnlocalizedName(name);
+            setHardness(3.5f);
         }
         
         @Override
@@ -408,6 +409,7 @@ public class ModelLoaderRegistryDebug
             setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
             setCreativeTab(CreativeTabs.tabBlock);
             setUnlocalizedName(name);
+            setHardness(3.5f);
         }
         
         @Override

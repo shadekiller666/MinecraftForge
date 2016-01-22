@@ -249,8 +249,11 @@ public class OBJModel implements IRetexturableModel<OBJModel>, IModelCustomData<
                     for (int i = 0; i < splitData.length; i++)
                         floatSplitData[i] = Float.parseFloat(splitData[i]);
                     TextureCoordinate texCoord = new TextureCoordinate(new Vector3f(floatSplitData[0], floatSplitData[1], floatSplitData.length == 3 ? floatSplitData[2] : 1));
-                    if (texCoord.u < 0.0f || texCoord.u > 1.0f || texCoord.v < 0.0f || texCoord.v > 1.0f)
-                        throw new UVsOutOfBoundsException(this.objFrom);
+//                    if (texCoord.u < 0.0f || texCoord.u > 1.0f || texCoord.v < 0.0f || texCoord.v > 1.0f)
+//                        throw new UVsOutOfBoundsException(this.objFrom);
+                    
+                    
+                    
 //                    this.UVsOutOfBounds = (texCoord.u < 0.0f || texCoord.u > 1.0f || texCoord.v < 0.0f || texCoord.v > 1.0f);
 
 //                    if (texCoord.u < 0.0f || texCoord.u > 1.0f || texCoord.v < 0.0f || texCoord.v > 1.0f)
@@ -1443,7 +1446,9 @@ public class OBJModel implements IRetexturableModel<OBJModel>, IModelCustomData<
                             builder.put(e, d, d, d, 1);
                         break;
                     case UV:
-                        if (!v.hasTextureCoordinate())
+                    	if (this.model.modelLocation.getResourcePath().endsWith("big_cube.obj"))
+                    		builder.put(e, sprite.getInterpolatedU(defUV.u * 48.0f), sprite.getInterpolatedV((1 - defUV.v) * 48.0f), 0, 1);
+                    	else if (v.getMaterial().isWhite() || !v.hasTextureCoordinate())
                             builder.put(e,
                                     sprite.getInterpolatedU(defUV.u * 16),
                                     sprite.getInterpolatedV((model.customData.flipV ? 1 - defUV.v: defUV.v) * 16),

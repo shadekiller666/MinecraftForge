@@ -2,7 +2,7 @@
     "forge_marker": 1,
     "defaults": {
         "textures": {},
-        "model": "forgedebugmodelloaderregistry:eye.obj"
+        "model": "forgedebugmodelloaderregistry:eye1.obj"
      },
     "variants": {
         "normal": [{}],
@@ -19,12 +19,12 @@
             }
         }],
         "facing": {
-            "down": { "model": "forgedebugmodelloaderregistry:eye.obj", "x": 90 },
-            "up": { "model": "forgedebugmodelloaderregistry:eye.obj", "x": 270 },
-            "north": { "model": "forgedebugmodelloaderregistry:eye.obj" },
-            "south": { "model": "forgedebugmodelloaderregistry:eye.obj", "y": 180 },
-            "west": { "model": "forgedebugmodelloaderregistry:eye.obj", "y": 270 },
-            "east": { "model": "forgedebugmodelloaderregistry:eye.obj", "y": 90 }
+            "down": {"x": 90},
+            "up": {"x": 270},
+            "north": {},
+            "south": {"y": 180},
+            "west": {"y": 270},
+            "east": {"y": 90}
         }
     }
 }

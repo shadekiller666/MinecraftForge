@@ -1,0 +1,5 @@
+newmtl cornia
+map_Kd forgedebugmodelloaderregistry:eye128
+
+newmtl white
+Kd 1.00 1.00 1.00
