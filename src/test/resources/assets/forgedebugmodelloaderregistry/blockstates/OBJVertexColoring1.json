@@ -1,13 +1,16 @@
 {
     "forge_marker": 1,
     "defaults": {
-        "textures": {"#cobble": "minecraft:blocks/redstone_block"},
+        "textures": {},
+        "transform": "forge:default-block",
         "model": "forgedebugmodelloaderregistry:big_cube.obj"
      },
     "variants": {
         "normal": [{}],
         "inventory": [{
-            "transform": "forge:default-block"
+            "transform": {
+            	"scale": 0.33
+            }
         }]
     }
 }

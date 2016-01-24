@@ -1446,9 +1446,9 @@ public class OBJModel implements IRetexturableModel<OBJModel>, IModelCustomData<
                             builder.put(e, d, d, d, 1);
                         break;
                     case UV:
-                    	if (this.model.modelLocation.getResourcePath().endsWith("big_cube.obj"))
+                    	/*if (this.model.modelLocation.getResourcePath().endsWith("big_cube.obj"))
                     		builder.put(e, sprite.getInterpolatedU(defUV.u * 48.0f), sprite.getInterpolatedV((1 - defUV.v) * 48.0f), 0, 1);
-                    	else if (v.getMaterial().isWhite() || !v.hasTextureCoordinate())
+                    	else*/ if (v.getMaterial().isWhite() || !v.hasTextureCoordinate())
                             builder.put(e,
                                     sprite.getInterpolatedU(defUV.u * 16),
                                     sprite.getInterpolatedV((model.customData.flipV ? 1 - defUV.v: defUV.v) * 16),
@@ -1605,6 +1605,22 @@ public class OBJModel implements IRetexturableModel<OBJModel>, IModelCustomData<
         public String toString()
         {
             return this.model.modelLocation.toString();
+        }
+        
+        private final LoadingCache<TextureAtlasSprite, TestModel> testCache = CacheBuilder.newBuilder().maximumSize(10).build(new CacheLoader<TextureAtlasSprite, TestModel>()
+        {
+        	public TestModel load(TextureAtlasSprite sprite)
+        	{
+        		return new TestModel(sprite);
+        	}
+        });
+        
+        @Override
+        public IBakedModel getBreakingModel(IBakedModel targetLayer, TextureAtlasSprite sprite)
+        {
+        	boolean isEye = this.model.modelLocation.getResourcePath().endsWith("eye1.obj");
+        	boolean isCube = this.model.modelLocation.getResourcePath().endsWith("big_cube.obj");
+        	return (isEye || isCube) ? testCache.getUnchecked(sprite) : IPerspectiveAwareModel.super.getBreakingModel(targetLayer, sprite);
         }
     }
 

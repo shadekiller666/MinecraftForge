@@ -1,4 +1,4 @@
-mtllib big_cube.mtl
+#mtllib big_cube.mtl
 v -1 -1 2
 v 2 -1 2
 v -1 2 2
@@ -7,7 +7,7 @@ v -1 2 -1
 v 2 2 -1
 v -1 -1 -1
 v 2 -1 -1
-usemtl cobble
+#usemtl obj:white
 f 1 2 4 3
 f 3 4 6 5
 f 5 6 8 7
