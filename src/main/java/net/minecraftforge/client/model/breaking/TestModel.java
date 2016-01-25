@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
@@ -23,11 +24,14 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.client.resources.model.IBakedModel;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumFacing.Axis;
+import net.minecraft.util.EnumFacing.AxisDirection;
 import net.minecraftforge.client.model.Attributes;
 import net.minecraftforge.client.model.pipeline.IVertexConsumer;
 import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 import net.minecraftforge.fml.common.FMLLog;
+import scala.actors.threadpool.Arrays;
 
 public class TestModel implements IBakedModel
 {
@@ -41,8 +45,8 @@ public class TestModel implements IBakedModel
 	private Vector3f minCorner = new Vector3f(0, 0, 0);
 	private Vector3f maxCorner = new Vector3f(1, 1, 1);
 	private Vector3f[] corners = new Vector3f[8];
-//	private EnumMap<EnumFacing.Axis, Edge[]> edgeMap = Maps.<EnumFacing.Axis, Edge[]>newEnumMap(EnumFacing.Axis.class);
-	private Map<Pair<EnumFacing.Axis, EnumFacing>, Edge[]> edgeMap = Maps.<Pair<EnumFacing.Axis, EnumFacing>, Edge[]>newHashMap();
+//	private EnumMap<Axis, Edge[]> edgeMap = Maps.<Axis, Edge[]>newEnumMap(Axis.class);
+	private Map<Pair<Axis, AxisDirection>, Edge[]> edgeMap = Maps.<Pair<Axis, AxisDirection>, Edge[]>newHashMap();
 	
 	static
 	{
@@ -74,7 +78,7 @@ public class TestModel implements IBakedModel
 	public TestModel(TextureAtlasSprite sprite)
 	{
 		this.sprite = sprite;
-		this.makeFaces();
+		this.makeFacesOld();
 	}
 	
 	public TestModel(Vector3f from, Vector3f to, TextureAtlasSprite sprite)
@@ -83,6 +87,7 @@ public class TestModel implements IBakedModel
 		this.minCorner = new Vector3f(Math.min(from.x, to.x), Math.min(from.y, to.y), Math.min(from.z, to.z));
 		this.maxCorner = new Vector3f(Math.max(from.x, to.x), Math.max(from.y, to.y), Math.max(from.z, to.z));
 		this.makeCorners();
+		this.makeEdges();
 	}
 	
 	private float[] getCornerPositions()
@@ -110,22 +115,84 @@ public class TestModel implements IBakedModel
 				vert++;
 			}
 		}
+		FMLLog.info("corners: %s", Arrays.toString(this.corners));
 	}
 	
 	private void makeEdges()
 	{
-		for (EnumFacing.Axis axis : EnumFacing.Axis.values())
+		for (Axis axis : Axis.values())
 		{
-			EnumFacing axisFace = EnumFacing.func_181076_a(EnumFacing.AxisDirection.NEGATIVE, axis);
 			Edge[] edges = new Edge[4];
+			EnumFaceDirection negDir = EnumFaceDirection.getFacing(EnumFacing.func_181076_a(AxisDirection.NEGATIVE, axis));
+			EnumFaceDirection posDir = EnumFaceDirection.getFacing(EnumFacing.func_181076_a(AxisDirection.POSITIVE, axis));
+			int j = 3;
 			for (int i = 0; i < 4; i++)
 			{
-				
+				VertexInformation negInfo = negDir.func_179025_a(i);
+				VertexInformation posInfo = posDir.func_179025_a(j);
+				float[] positions = this.getCornerPositions();
+				Vector3f negVec = new Vector3f(positions[negInfo.field_179184_a], positions[negInfo.field_179182_b], positions[negInfo.field_179183_c]);
+				Vector3f posVec = new Vector3f(positions[posInfo.field_179184_a], positions[posInfo.field_179182_b], positions[posInfo.field_179183_c]);
+				edges[i] = new Edge(negVec, posVec);
+				j--;
 			}
+			Pair<Axis, AxisDirection> negPair = Pair.of(axis, AxisDirection.NEGATIVE);
+			Pair<Axis, AxisDirection> posPair = Pair.of(axis, AxisDirection.POSITIVE);
+			this.edgeMap.put(negPair, ArrayUtils.clone(edges));
+			ArrayUtils.reverse(edges);
+			this.edgeMap.put(posPair, ArrayUtils.clone(edges));
 		}
+		this.printEdgeMap();
 	}
 	
 	private void makeFaces()
+	{
+		UnpackedBakedQuad.Builder builder;
+		for (EnumFacing face : EnumFacing.values())
+		{
+			builder = new UnpackedBakedQuad.Builder(Attributes.DEFAULT_BAKED_FORMAT);
+			builder.setQuadOrientation(face);
+			List<BakedQuad> quads = Lists.newArrayList();
+			float d = LightUtil.diffuseLight(face);
+			Edge[] edges = this.getEdgesForFace(face);
+			
+		}
+	}
+	
+	public void setNumSegments(Axis axis, int numSegments)
+	{
+		numSegments = Math.max(1, numSegments);
+		for (int i = 0; i < 4; i++)
+		{
+			this.edgeMap.get(Pair.of(axis, AxisDirection.NEGATIVE))[i].setNumSegments(numSegments);
+			this.edgeMap.get(Pair.of(axis, AxisDirection.POSITIVE))[i].setNumSegments(numSegments);
+		}
+		this.faceQuads.clear();
+		this.hasMadeFaces = false;
+	}
+	
+	private void printEdgeMap()
+	{
+		StringBuilder builder = new StringBuilder(String.format("%nedges: %n"));
+		for (Map.Entry<Pair<Axis, AxisDirection>, Edge[]> e : this.edgeMap.entrySet())
+		{
+			builder.append(e.getKey()).append("={");
+			for (int i = 0; i < 4; i++)
+			{
+				builder.append(i).append(": ").append(e.getValue()[i].vertsToString());
+				if (i + 1 != 4) builder.append(", ");
+			}
+			builder.append(String.format("}%n"));
+		}
+		FMLLog.info(builder.toString());
+	}
+	
+	private Edge[] getEdgesForFace(EnumFacing face)
+	{
+		return this.edgeMap.get(Pair.of(face.getAxis(), face.getAxisDirection()));
+	}
+	
+	private void makeFacesOld()
 	{
 		for (EnumFacing face : EnumFacing.values())
 		{
@@ -178,7 +245,7 @@ public class TestModel implements IBakedModel
 	@Override
 	public List<BakedQuad> getFaceQuads(EnumFacing face)
 	{
-		if (!this.hasMadeFaces) this.makeFaces();
+		if (!this.hasMadeFaces) this.makeFacesOld();
 		return this.faceQuads.get(face);
 	}
 

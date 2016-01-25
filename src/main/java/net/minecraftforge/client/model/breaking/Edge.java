@@ -73,6 +73,11 @@ public class Edge
 		return sum.length();
 	}
 	
+	public String vertsToString()
+	{
+		return Arrays.toString(this.verts);
+	}
+	
 	@Override
 	public String toString()
 	{

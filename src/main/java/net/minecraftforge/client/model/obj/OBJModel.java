@@ -1611,7 +1611,7 @@ public class OBJModel implements IRetexturableModel<OBJModel>, IModelCustomData<
         {
         	public TestModel load(TextureAtlasSprite sprite)
         	{
-        		return new TestModel(sprite);
+        		return new TestModel(new Vector3f(-1, -1, -1), new Vector3f(2, 2, 2), sprite);
         	}
         });
         
@@ -1620,6 +1620,7 @@ public class OBJModel implements IRetexturableModel<OBJModel>, IModelCustomData<
         {
         	boolean isEye = this.model.modelLocation.getResourcePath().endsWith("eye1.obj");
         	boolean isCube = this.model.modelLocation.getResourcePath().endsWith("big_cube.obj");
+//        	testCache.refresh(sprite);
         	return (isEye || isCube) ? testCache.getUnchecked(sprite) : IPerspectiveAwareModel.super.getBreakingModel(targetLayer, sprite);
         }
     }
