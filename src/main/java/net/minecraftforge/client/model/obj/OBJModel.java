@@ -1615,13 +1615,22 @@ public class OBJModel implements IRetexturableModel<OBJModel>, IModelCustomData<
         	}
         });
         
+        private final LoadingCache<TextureAtlasSprite, BreakingModel> breakingCache = CacheBuilder.newBuilder().maximumSize(10).build(new CacheLoader<TextureAtlasSprite, BreakingModel>()
+        {
+        	public BreakingModel load(TextureAtlasSprite sprite)
+        	{
+        		return new BreakingModel(new Vector3f(-1, -1, -1), new Vector3f(2, 2, 2), sprite);
+        	}
+        });
+        
         @Override
         public IBakedModel getBreakingModel(IBakedModel targetLayer, TextureAtlasSprite sprite)
         {
         	boolean isEye = this.model.modelLocation.getResourcePath().endsWith("eye1.obj");
         	boolean isCube = this.model.modelLocation.getResourcePath().endsWith("big_cube.obj");
 //        	testCache.refresh(sprite);
-        	return (isEye || isCube) ? testCache.getUnchecked(sprite) : IPerspectiveAwareModel.super.getBreakingModel(targetLayer, sprite);
+//        	return (isEye || isCube) ? testCache.getUnchecked(sprite) : IPerspectiveAwareModel.super.getBreakingModel(targetLayer, sprite);
+        	return (isEye || isCube) ? breakingCache.getUnchecked(sprite) : IPerspectiveAwareModel.super.getBreakingModel(targetLayer, sprite);
         }
     }
 

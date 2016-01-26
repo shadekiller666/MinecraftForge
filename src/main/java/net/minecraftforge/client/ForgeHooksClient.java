@@ -31,6 +31,7 @@ import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -44,6 +45,7 @@ import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.ModelRotation;
+import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -591,5 +593,10 @@ public class ForgeHooksClient
                 entityRenderer.loadShader(shader);
             }
         }
+    }
+    
+    public static IBakedModel getStandardBlockBreakModel(IBakedModel target, TextureAtlasSprite texture)
+    {
+    	return (new SimpleBakedModel.Builder(target, texture)).makeBakedModel();
     }
 }

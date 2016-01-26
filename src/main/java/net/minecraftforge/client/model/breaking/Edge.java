@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 import javax.vecmath.Vector3f;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public class Edge
 {
 	private Vector3f[] verts = new Vector3f[] {new Vector3f(0, 0, 0), new Vector3f(1, 1, 1)};
@@ -66,6 +68,22 @@ public class Edge
 		return this.verts;
 	}
 	
+	public Vector3f getStartVertex()
+	{
+		return this.verts[0];
+	}
+	
+	public Vector3f getEndVertex()
+	{
+		return this.verts[this.verts.length - 1];
+	}
+	
+	public void reverse()
+	{
+		ArrayUtils.reverse(this.verts);
+	}
+	
+	//TODO: fix me!
 	public float totalLength()
 	{
 		Vector3f sum = new Vector3f();
@@ -81,6 +99,6 @@ public class Edge
 	@Override
 	public String toString()
 	{
-		return String.format("segments: %d, totalLength: %d, vertices: %s", this.numSegments, this.totalLength(), Arrays.toString(this.verts));
+		return String.format("segments: %s, totalLength: %s, vertices: %s", Integer.toString(this.numSegments), Float.toString(this.totalLength()), Arrays.toString(this.verts));
 	}
 }
