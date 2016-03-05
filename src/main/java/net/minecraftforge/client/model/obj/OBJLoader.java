@@ -30,25 +30,25 @@ public enum OBJLoader implements ICustomModelLoader {
 
     public void addDomain(String domain)
     {
-        enabledDomains.add(domain.toLowerCase());
+        this.enabledDomains.add(domain.toLowerCase());
         FMLLog.log(Level.INFO, "OBJLoader: Domain %s has been added.", domain.toLowerCase());
     }
 
     public void onResourceManagerReload(IResourceManager resourceManager)
     {
         this.manager = resourceManager;
-        cache.clear();
+        this.cache.clear();
     }
 
     public boolean accepts(ResourceLocation modelLocation)
     {
-        return enabledDomains.contains(modelLocation.getResourceDomain()) && modelLocation.getResourcePath().endsWith(".obj");
+        return this.enabledDomains.contains(modelLocation.getResourceDomain()) && modelLocation.getResourcePath().endsWith(".obj");
     }
 
     public IModel loadModel(ResourceLocation modelLocation) throws Exception
     {
         ResourceLocation file = new ResourceLocation(modelLocation.getResourceDomain(), modelLocation.getResourcePath());
-        if (!cache.containsKey(file))
+        if (!this.cache.containsKey(file))
         {
             IResource resource = null;
             try
