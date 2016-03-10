@@ -43,8 +43,8 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.TRSRTransformation;
 import net.minecraftforge.client.model.b3d.B3DLoader;
 import net.minecraftforge.client.model.obj.OBJLoader;
-import net.minecraftforge.client.model.obj.OBJModel1;
-import net.minecraftforge.client.model.obj.OBJModel1.OBJBakedModel;
+import net.minecraftforge.client.model.obj.OBJModel;
+import net.minecraftforge.client.model.obj.OBJModel.OBJBakedModel;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
@@ -218,7 +218,7 @@ public class ModelLoaderRegistryDebug
     {
         public static final OBJTesseractBlock instance = new OBJTesseractBlock();
         public static final String name = "OBJTesseractBlock";
-        private ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{OBJModel1.OBJProperty.instance});
+        private ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{OBJModel.OBJProperty.instance});
 
         private OBJTesseractBlock()
         {
@@ -246,8 +246,9 @@ public class ModelLoaderRegistryDebug
         public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos)
         {
             OBJTesseractTileEntity tileEntity = (OBJTesseractTileEntity) world.getTileEntity(pos);
-            OBJModel1.OBJState retState = new OBJModel1.OBJState(tileEntity == null ? Lists.newArrayList(OBJModel1.Group.ALL) : tileEntity.visible, true);
-            return ((IExtendedBlockState) this.state.getBaseState()).withProperty(OBJModel1.OBJProperty.instance, retState);
+//            OBJModel.OBJState retState = new OBJModel.OBJState(tileEntity == null ? Lists.newArrayList(OBJModel.Group.ALL) : tileEntity.visible, true);
+            OBJModel.OBJState retState = new OBJModel.OBJState(tileEntity != null ? tileEntity.visible : null);
+            return ((IExtendedBlockState) this.state.getBaseState()).withProperty(OBJModel.OBJProperty.instance, retState);
         }
 
         @Override
@@ -265,7 +266,7 @@ public class ModelLoaderRegistryDebug
             {
                 if (model != ModelLoaderRegistry.getMissingModel())
                 {
-                    tileEntity.setMax(((OBJModel1) model).getMatLib().getGroups().keySet().size() - 1);
+                    tileEntity.setMax(((OBJModel) model).getMatLib().getGroups().keySet().size() - 1);
                     tileEntity.increment();
                 }
             }
@@ -295,12 +296,12 @@ public class ModelLoaderRegistryDebug
 
         public OBJTesseractTileEntity()
         {
-            this.visible.add(OBJModel1.Group.ALL);
+            this.visible.add(OBJModel.Group.ALL);
         }
 
         public void increment()
         {
-            if (this.visible.contains(OBJModel1.Group.ALL)) this.visible.remove(OBJModel1.Group.ALL);
+            if (this.visible.contains(OBJModel.Group.ALL)) this.visible.remove(OBJModel.Group.ALL);
             if (this.counter == max)
             {
                 this.counter = 0;
@@ -314,7 +315,7 @@ public class ModelLoaderRegistryDebug
 
         public void decrement()
         {
-            if (this.visible.contains(OBJModel1.Group.ALL)) this.visible.remove(OBJModel1.Group.ALL);
+            if (this.visible.contains(OBJModel.Group.ALL)) this.visible.remove(OBJModel.Group.ALL);
             if (this.counter == 1)
             {
                 this.counter = max + 1;
@@ -395,7 +396,7 @@ public class ModelLoaderRegistryDebug
         public static final PropertyDirection FACING = PropertyDirection.create("facing");
         public static final OBJDirectionEye instance = new OBJDirectionEye();
         public static final String name = "OBJDirectionEye";
-        private ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[] {FACING}, new IUnlistedProperty[]{OBJModel1.OBJProperty.instance});
+        private ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[] {FACING}, new IUnlistedProperty[]{OBJModel.OBJProperty.instance});
 
         private OBJDirectionEye()
         {
@@ -426,7 +427,7 @@ public class ModelLoaderRegistryDebug
         @Override
         public BlockStateContainer createBlockState()
         {
-            return new ExtendedBlockState(this, new IProperty[] {FACING}, new IUnlistedProperty[] {OBJModel1.OBJProperty.instance});
+            return new ExtendedBlockState(this, new IProperty[] {FACING}, new IUnlistedProperty[] {OBJModel.OBJProperty.instance});
         }
 
         @Override
@@ -443,8 +444,9 @@ public class ModelLoaderRegistryDebug
         {
             EnumFacing facing = (EnumFacing) state.getValue(FACING);
             TRSRTransformation transform = new TRSRTransformation(facing);
-            OBJModel1.OBJState retState = new OBJModel1.OBJState(Arrays.asList(new String[]{OBJModel1.Group.ALL}), true, transform);
-            return ((IExtendedBlockState) state).withProperty(OBJModel1.OBJProperty.instance, retState);
+//            OBJModel.OBJState retState = new OBJModel.OBJState(Arrays.asList(new String[]{OBJModel.Group.ALL}), true, transform);
+            OBJModel.OBJState retState = new OBJModel.OBJState(transform);
+            return ((IExtendedBlockState) state).withProperty(OBJModel.OBJProperty.instance, retState);
         }
 
         public static EnumFacing getFacingFromEntity(World worldIn, BlockPos clickedBlock, EntityLivingBase entityIn)
@@ -579,7 +581,7 @@ public class ModelLoaderRegistryDebug
         public static final PropertyDirection FACING = PropertyDirection.create("facing");
         public static final OBJDirectionBlock instance = new OBJDirectionBlock();
         public static final String name = "OBJDirectionBlock";
-        public ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{OBJModel1.OBJProperty.instance});
+        public ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{OBJModel.OBJProperty.instance});
 
         private OBJDirectionBlock()
         {
@@ -622,14 +624,15 @@ public class ModelLoaderRegistryDebug
             //Only return an IExtendedBlockState from this method and createState(), otherwise block placement will break!
             EnumFacing facing = (EnumFacing) state.getValue(FACING);
             TRSRTransformation transform = new TRSRTransformation(facing);
-            OBJModel1.OBJState newState = new OBJModel1.OBJState(Lists.newArrayList(OBJModel1.Group.ALL), true, transform);
-            return ((IExtendedBlockState) state).withProperty(OBJModel1.OBJProperty.instance, newState);
+//            OBJModel.OBJState newState = new OBJModel.OBJState(Lists.newArrayList(OBJModel.Group.ALL), true, transform);
+            OBJModel.OBJState newState = new OBJModel.OBJState(transform);
+            return ((IExtendedBlockState) state).withProperty(OBJModel.OBJProperty.instance, newState);
         }
 
         @Override
         public BlockStateContainer createBlockState()
         {
-            return new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{OBJModel1.OBJProperty.instance});
+            return new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{OBJModel.OBJProperty.instance});
         }
 
         public static EnumFacing getFacingFromEntity(World worldIn, BlockPos clickedBlock, EntityLivingBase entityIn)
@@ -723,7 +726,7 @@ public class ModelLoaderRegistryDebug
     {
         public static final OBJDynamicEye instance = new OBJDynamicEye();
         public static final String name = "OBJDynamicEye";
-        public ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[] {OBJModel1.OBJProperty.instance});
+        public ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[] {OBJModel.OBJProperty.instance});
         private OBJDynamicEye()
         {
             super(Material.iron);
@@ -763,7 +766,7 @@ public class ModelLoaderRegistryDebug
                 OBJDynamicEyeTileEntity te = (OBJDynamicEyeTileEntity) world.getTileEntity(pos);
                 if (te.state != null)
                 {
-                    return ((IExtendedBlockState) this.state.getBaseState()).withProperty(OBJModel1.OBJProperty.instance, te.state);
+                    return ((IExtendedBlockState) this.state.getBaseState()).withProperty(OBJModel.OBJProperty.instance, te.state);
                 }
             }
             return state;
@@ -772,17 +775,18 @@ public class ModelLoaderRegistryDebug
         @Override
         public BlockStateContainer createBlockState()
         {
-            return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[] {OBJModel1.OBJProperty.instance});
+            return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[] {OBJModel.OBJProperty.instance});
         }
     }
 
     public static class OBJDynamicEyeTileEntity extends TileEntity implements ITickable
     {
-        public OBJModel1.OBJState state;
+        public OBJModel.OBJState state;
 
         public OBJDynamicEyeTileEntity()
         {
-            this.state = new OBJModel1.OBJState(Lists.newArrayList(OBJModel1.Group.ALL), true);
+//            this.state = new OBJModel.OBJState(Lists.newArrayList(OBJModel.Group.ALL), true);
+        	this.state = new OBJModel.OBJState();
         }
 
         @Override
@@ -813,7 +817,8 @@ public class ModelLoaderRegistryDebug
                 matrix.setRotation(rot);
                 TRSRTransformation transform = new TRSRTransformation(matrix);
                 transform = TRSRTransformation.blockCenterToCorner(transform);
-                this.state = new OBJModel1.OBJState(Lists.newArrayList(OBJModel1.Group.ALL), true, transform);
+//                this.state = new OBJModel.OBJState(Lists.newArrayList(OBJModel.Group.ALL), true, transform);
+                this.state = new OBJModel.OBJState(transform);
                 this.worldObj.markBlockRangeForRenderUpdate(this.pos, this.pos);
             }
         }
