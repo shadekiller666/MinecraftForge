@@ -1,20 +1,28 @@
 {
     "forge_marker": 1,
     "defaults": {
-        "textures": {},
-        "model": "forgedebugmodelloaderregistry:eye.obj"
+        "model": "forgedebugmodelloaderregistry:eye.obj",
+        "transform": "forge:default-block",
+        "custom": {
+        	"flipUVs": "v"
+        }
      },
     "variants": {
         "normal": [{}],
         "inventory": [{
             "transform": {
-                "thirdperson": {
+                "thirdperson_righthand": {
                     "translation": [0, 0.09375, -0.171875],
-                    "rotation": [ { "y": -45}, {"x": 10}, {"z": 170} ],
+                    "rotation": {"y": 180},
+                    "scale": 0.375
+                },
+                "thirdperson_lefthand": {
+                    "translation": [0, 0.09375, -0.171875],
                     "scale": 0.375
                 },
                 "gui": {
-                    "rotation": [ {"y": 90} ]
+                    "rotation": {"y": 180}
+                    "scale": 0.75
                 }
             }
         }]

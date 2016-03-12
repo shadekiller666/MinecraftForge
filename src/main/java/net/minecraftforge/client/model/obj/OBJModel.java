@@ -1470,9 +1470,8 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
         }
         
         @Override
-        public List<BakedQuad> getQuads(IBlockState blockState, EnumFacing side, long rand)
+        public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand)
         {
-        	//getQuads()
         	if (side != null) return ImmutableList.of();
         	IModelState modelState = this.state;
         	if (state instanceof IExtendedBlockState)
@@ -1530,7 +1529,6 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
         		{
         			this.bakeFaces(faces, transform);
         		}
-        		
         		for (Face f : faces)
         		{
         			if (this.materials.get(f.getMaterialName()).isWhite())
@@ -1612,7 +1610,6 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
         @Override
         public boolean isBuiltInRenderer()
         {
-        	//isBuiltInRenderer()
             return false;
         }
 
@@ -1630,10 +1627,9 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
         }
         
         @Override
-        public ItemOverrideList func_188617_f()
+        public ItemOverrideList getOverrides()
         {
-        	//getOverrides()
-        	return ItemOverrideList.field_188022_a;
+        	return ItemOverrideList.NONE;
         }
 
 //        private final LoadingCache<IModelState, OBJBakedModel> cache = CacheBuilder.newBuilder().maximumSize(20).build(new CacheLoader<IModelState, OBJBakedModel>()

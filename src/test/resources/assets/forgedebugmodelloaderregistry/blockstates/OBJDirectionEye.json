@@ -1,30 +1,37 @@
 {
-    "forge_marker": 1,
-    "defaults": {
-        "textures": {},
-        "model": "forgedebugmodelloaderregistry:eye.obj"
-     },
-    "variants": {
-        "normal": [{}],
-        "inventory": [{
-            "transform": {
-                "thirdperson": {
-                    "translation": [0, 0.09375, -0.171875],
-                    "rotation": [ { "y": -45}, {"x": 10}, {"z": 170} ],
-                    "scale": 0.375
-                },
-                "gui": {
-                    "rotation": [ {"y": 90} ]
-                }
-            }
-        }],
-        "facing": {
-            "down": { "model": "forgedebugmodelloaderregistry:eye.obj", "x": 90 },
-            "up": { "model": "forgedebugmodelloaderregistry:eye.obj", "x": 270 },
-            "north": { "model": "forgedebugmodelloaderregistry:eye.obj" },
-            "south": { "model": "forgedebugmodelloaderregistry:eye.obj", "y": 180 },
-            "west": { "model": "forgedebugmodelloaderregistry:eye.obj", "y": 270 },
-            "east": { "model": "forgedebugmodelloaderregistry:eye.obj", "y": 90 }
-        }
-    }
+	"forge_marker": 1,
+	"defaults": {
+		"model": "forgedebugmodelloaderregistry:eye.obj",
+		"transform": "forge:default-block",
+		"custom": {
+			"flipUVs": "v"
+		}		
+	},
+	"variants": {
+		"inventory": [{
+			"transform": {
+				"thirdperson_righthand": {
+					"translation": [0, 0.09375, -0.171875],
+					"rotation": {"y": 180},
+					"scale": 0.375
+				},
+				"thirdperson_lefthand": {
+					"translation": [0, 0.09375, -0.171875],
+					"scale": 0.375
+				},
+				"gui": {
+					"rotation": {"y": 180},
+					"scale": 0.75
+				}
+			}
+		}],
+		"facing": {
+			"down": {"x": 90},
+			"up": {"x": 270},
+			"north": {},
+			"south": {"y": 180},
+			"west": {"y": 270},
+			"east": {"y": 90}
+		}
+	}
 }
