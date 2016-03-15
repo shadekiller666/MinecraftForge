@@ -287,12 +287,12 @@ public class ModelLoaderRegistryDebug
         private List<String> checkConnections(IBlockAccess world, BlockPos pos)
         {
         	List<String> connections = Lists.newArrayList("center");
-//        	if (world.getBlockState(pos.north()) != null && !world.isAirBlock(pos.north())) connections.add("north");
-//        	if (world.getBlockState(pos.south()) != null && !world.isAirBlock(pos.south())) connections.add("south");
-//        	if (world.getBlockState(pos.west()) != null && !world.isAirBlock(pos.west())) connections.add("west");
-//        	if (world.getBlockState(pos.east()) != null && !world.isAirBlock(pos.east())) connections.add("east");
-//        	if (world.getBlockState(pos.up()) != null && !world.isAirBlock(pos.up())) connections.add("up");
-//        	if (world.getBlockState(pos.down()) != null && !world.isAirBlock(pos.down())) connections.add("down");
+        	if (world.getBlockState(pos.north()) != null && !world.isAirBlock(pos.north())) connections.add("north");
+        	if (world.getBlockState(pos.south()) != null && !world.isAirBlock(pos.south())) connections.add("south");
+        	if (world.getBlockState(pos.west()) != null && !world.isAirBlock(pos.west())) connections.add("west");
+        	if (world.getBlockState(pos.east()) != null && !world.isAirBlock(pos.east())) connections.add("east");
+        	if (world.getBlockState(pos.up()) != null && !world.isAirBlock(pos.up())) connections.add("up");
+        	if (world.getBlockState(pos.down()) != null && !world.isAirBlock(pos.down())) connections.add("down");
         	return connections;
         }
         

@@ -260,8 +260,10 @@ public class OBJCustomData
 			}
 			else
 			{
-				GroupConfigBuilder builder = new GroupConfigBuilder(this.groupNames);
-				return builder.combine(configsToMerge, this.configMap, ignoreHidden);
+				GroupConfigBuilder builder = new GroupConfigBuilder(this.groupNames).startCombination(combinedName);
+				GroupConfig combined = builder.combine(configsToMerge, this.configMap, ignoreHidden);
+				this.combinedConfigs.put(combinedName, combined);
+				return combined;
 			}
 		}
 		
@@ -350,6 +352,11 @@ public class OBJCustomData
 			this.name = configName;
 			this.alwaysActive = false;
 			return this;
+		}
+		
+		public GroupConfigBuilder startCombination(String combinedName)
+		{
+			return this.startNew(combinedName);
 		}
 		
 		public GroupConfigBuilder startCombination(List<String> activeConfigs)
