@@ -1487,7 +1487,7 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
             		}
             	}
             }
-        	if (this.quads == null)
+        	if (this.quads == null || !modelState.equals(this.state))
         	{
         		boolean applyToAll = true;
         		this.quads = Collections.synchronizedSet(Sets.<BakedQuad>newLinkedHashSet());

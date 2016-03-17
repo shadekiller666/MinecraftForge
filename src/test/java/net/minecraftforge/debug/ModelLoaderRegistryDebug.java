@@ -35,6 +35,7 @@ import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -284,15 +285,57 @@ public class ModelLoaderRegistryDebug
         @Override
         public boolean isVisuallyOpaque() { return false; }
         
+//        @Override
+//        public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB bounds, List<AxisAlignedBB> list, Entity entity)
+//        {
+//        	addCollisionBoxToList(pos, bounds, list, new Axis)
+//        }
+        
+        @Override
+        public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos)
+        {
+        	double pixel = 1.0 / 16.0;
+        	double multiplier = 2.5;
+        	double offset = pixel * multiplier;
+        	AxisAlignedBB bounds = new AxisAlignedBB(0.5 - offset, 0.5 - offset, 0.5 - offset, 0.5 + offset, 0.5 + offset, 0.5 + offset);
+        	AxisAlignedBB connectorX = new AxisAlignedBB(0, 0.5 - offset, 0.5 - offset, pixel, 0.5 + offset, 0.5 + offset);
+        	AxisAlignedBB connectorY = new AxisAlignedBB(0.5 - offset, 0, 0.5 - offset, 0.5 + offset, pixel, 0.5 + offset); 
+        	AxisAlignedBB connectorZ = new AxisAlignedBB(0.5 - offset, 0.5 - offset, 0, 0.5 + offset, 0.5 + offset, pixel); 
+        	List<String> connections = checkConnections(world, pos);
+        	for (EnumFacing facing : EnumFacing.values())
+        	{
+        		if (connections.contains(facing.getName().toLowerCase()))
+        		{
+        			switch (facing.getAxis())
+        			{
+        			case X:
+        				bounds = bounds.union(facing.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE ? connectorX.offset(pixel * 15.0, 0, 0) : connectorX);
+        				break;
+        			case Y:
+        				bounds = bounds.union(facing.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE ? connectorY.offset(0, pixel * 15.0, 0) : connectorY);
+        				break;
+        			case Z:
+        				bounds = bounds.union(facing.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE ? connectorZ.offset(0, 0, pixel * 15.0) : connectorZ);
+        				break;
+        			}
+        		}
+        	}
+        	return bounds;
+        }
+        
         private List<String> checkConnections(IBlockAccess world, BlockPos pos)
         {
         	List<String> connections = Lists.newArrayList("center");
-        	if (world.getBlockState(pos.north()) != null && !world.isAirBlock(pos.north())) connections.add("north");
-        	if (world.getBlockState(pos.south()) != null && !world.isAirBlock(pos.south())) connections.add("south");
-        	if (world.getBlockState(pos.west()) != null && !world.isAirBlock(pos.west())) connections.add("west");
-        	if (world.getBlockState(pos.east()) != null && !world.isAirBlock(pos.east())) connections.add("east");
-        	if (world.getBlockState(pos.up()) != null && !world.isAirBlock(pos.up())) connections.add("up");
-        	if (world.getBlockState(pos.down()) != null && !world.isAirBlock(pos.down())) connections.add("down");
+        	for (EnumFacing facing : EnumFacing.values())
+        	{
+        		if (world.getBlockState(pos.offset(facing)) != null && !world.isAirBlock(pos.offset(facing))) connections.add(facing.getName().toLowerCase());
+        	}
+//        	if (world.getBlockState(pos.north()) != null && !world.isAirBlock(pos.north())) connections.add("north");
+//        	if (world.getBlockState(pos.south()) != null && !world.isAirBlock(pos.south())) connections.add("south");
+//        	if (world.getBlockState(pos.west()) != null && !world.isAirBlock(pos.west())) connections.add("west");
+//        	if (world.getBlockState(pos.east()) != null && !world.isAirBlock(pos.east())) connections.add("east");
+//        	if (world.getBlockState(pos.up()) != null && !world.isAirBlock(pos.up())) connections.add("up");
+//        	if (world.getBlockState(pos.down()) != null && !world.isAirBlock(pos.down())) connections.add("down");
         	return connections;
         }
         
@@ -624,30 +667,37 @@ public class ModelLoaderRegistryDebug
     		{
     			FMLLog.info("loadedModels was empty, attempting to load model '%s'", DIGIT.toString());
 
-    			IModel model = ModelLoaderRegistry.getModel(DIGIT);
-				
-				if (model != null && model instanceof OBJModel)
-				{
-					FMLLog.info("Successfully obtained model from registry");
-					OBJModel objModel = new OBJModel(((OBJModel) model).getMatLib(), ((OBJModel) model).getModelLocation(), ((OBJModel) model).getCustomData());
-					OBJCustomData.GroupConfigHandler configHandler = objModel.getCustomData().getConfigHandler();
-					OBJCustomData.GroupConfigBuilder builder = configHandler.getConfigBuilder();
+    			try
+    			{
+    				IModel model = ModelLoaderRegistry.getModel(DIGIT);
 					
-					for (int i = 0; i <= 9; i++)
+					if (model != null && model instanceof OBJModel)
 					{
-						Pair<String, String[]> configOperation = te.getConfigOperationFor(i);
-						builder.startNew("" + i);
-						if (configOperation.getLeft().equals("hide")) builder.showAll(configOperation.getRight());
-						if (configOperation.getLeft().equals("show")) builder.hideAll(configOperation.getRight());
-						configHandler.addConfig(builder.build());
+						FMLLog.info("Successfully obtained model from registry");
+						OBJModel objModel = new OBJModel(((OBJModel) model).getMatLib(), ((OBJModel) model).getModelLocation(), ((OBJModel) model).getCustomData());
+						OBJCustomData.GroupConfigHandler configHandler = objModel.getCustomData().getConfigHandler();
+						OBJCustomData.GroupConfigBuilder builder = configHandler.getConfigBuilder();
+						
+						for (int i = 0; i <= 9; i++)
+						{
+							Pair<String, String[]> configOperation = te.getConfigOperationFor(i);
+							builder.startNew("" + i);
+							if (configOperation.getLeft().equals("hide")) builder.showAll(configOperation.getRight());
+							if (configOperation.getLeft().equals("show")) builder.hideAll(configOperation.getRight());
+							configHandler.addConfig(builder.build());
+						}
+						
+						for (int i = 0; i <= 9; i++)
+						{
+							OBJModel.OBJState state = new OBJModel.OBJState(Lists.newArrayList("" + i));
+							loadedModels.put("" + i, objModel.bake(state, Attributes.DEFAULT_BAKED_FORMAT, BAKED_TEXTURE_GETTER));
+						}
 					}
-							
-					for (int i = 0; i <= 9; i++)
-					{
-						OBJModel.OBJState state = new OBJModel.OBJState(Lists.newArrayList("" + i));
-						loadedModels.put("" + i, objModel.bake(state, Attributes.DEFAULT_BAKED_FORMAT, BAKED_TEXTURE_GETTER));
-					}
-				}
+    			}
+    			catch (Exception e)
+    			{
+    				e.printStackTrace();
+    			}
     		}
     		
     		IBakedModel hourTens = null;
