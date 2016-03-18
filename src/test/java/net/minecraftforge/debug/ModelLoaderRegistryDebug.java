@@ -7,9 +7,12 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.vecmath.AxisAngle4d;
+import javax.vecmath.AxisAngle4f;
+import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3d;
+import javax.vecmath.Vector3f;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
@@ -49,21 +52,23 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.Attributes;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.client.model.TRSRTransformation;
 import net.minecraftforge.client.model.b3d.B3DLoader;
 import net.minecraftforge.client.model.obj.OBJCustomData;
 import net.minecraftforge.client.model.obj.OBJLoader;
 import net.minecraftforge.client.model.obj.OBJModel;
 import net.minecraftforge.client.model.pipeline.LightUtil;
+import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
@@ -85,15 +90,6 @@ public class ModelLoaderRegistryDebug
 {
     public static final String MODID = "ForgeDebugModelLoaderRegistry";
     public static final String VERSION = "1.0";
-    private static final Function<ResourceLocation, TextureAtlasSprite> BAKED_TEXTURE_GETTER = new Function<ResourceLocation, TextureAtlasSprite>()
-			{
-				@Nullable
-				@Override
-				public TextureAtlasSprite apply(@Nullable ResourceLocation location)
-				{
-					return location == null ? null : Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString());
-				}
-			};
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
@@ -113,13 +109,13 @@ public class ModelLoaderRegistryDebug
 
     private void clientPreInit()
     {
-        B3DLoader.instance.addDomain(MODID.toLowerCase());
+        B3DLoader.INSTANCE.addDomain(MODID.toLowerCase());
         Item item = Item.getItemFromBlock(CustomModelBlock.instance);
         ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(MODID.toLowerCase() + ":" + CustomModelBlock.name, "inventory"));
         
-        OBJLoader.instance.addDomain(MODID.toLowerCase());
+        OBJLoader.INSTANCE.addDomain(MODID.toLowerCase());
         ClientRegistry.bindTileEntitySpecialRenderer(OBJClockTileEntity.class, new OBJClockRender());
-        
+
         Item item2 = Item.getItemFromBlock(OBJGroupTest.instance);
         ModelLoader.setCustomModelResourceLocation(item2, 0, new ModelResourceLocation(MODID.toLowerCase() + ":" + OBJGroupTest.name, "inventory"));
         
@@ -136,6 +132,7 @@ public class ModelLoaderRegistryDebug
         ModelLoader.setCustomModelResourceLocation(item6, 0, new ModelResourceLocation(MODID.toLowerCase() + ":" + OBJDirectionBlock.name, "inventory"));
         
         Item item7 = Item.getItemFromBlock(OBJClock.instance);
+        ForgeHooksClient.registerTESRItemStack(item7, 0, OBJClockTileEntity.class);
         ModelLoader.setCustomModelResourceLocation(item7, 0, new ModelResourceLocation(MODID.toLowerCase() + ":" + OBJClock.name, "inventory"));
         
         OBJClockRender.init();
@@ -147,7 +144,7 @@ public class ModelLoaderRegistryDebug
         public static final CustomModelBlock instance = new CustomModelBlock();
         public static final String name = "CustomModelBlock";
         private int counter = 1;
-        public ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{B3DLoader.B3DFrameProperty.instance});
+        public ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{B3DLoader.B3DFrameProperty.INSTANCE});
 
         private CustomModelBlock()
         {
@@ -189,7 +186,7 @@ public class ModelLoaderRegistryDebug
         {
             //Only return an IExtendedBlockState from this method and createState(), otherwise block placement might break!
             B3DLoader.B3DState newState = new B3DLoader.B3DState(null, counter);
-            return ((IExtendedBlockState) state).withProperty(B3DLoader.B3DFrameProperty.instance, newState);
+            return ((IExtendedBlockState) state).withProperty(B3DLoader.B3DFrameProperty.INSTANCE, newState);
         }
 
         @Override
@@ -209,7 +206,7 @@ public class ModelLoaderRegistryDebug
         @Override
         public BlockStateContainer createBlockState()
         {
-            return new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{B3DLoader.B3DFrameProperty.instance});
+            return new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{B3DLoader.B3DFrameProperty.INSTANCE});
         }
         
         public static EnumFacing getFacingFromEntity(World worldIn, BlockPos clickedBlock, EntityLivingBase entityIn)
@@ -285,12 +282,6 @@ public class ModelLoaderRegistryDebug
         @Override
         public boolean isVisuallyOpaque() { return false; }
         
-//        @Override
-//        public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB bounds, List<AxisAlignedBB> list, Entity entity)
-//        {
-//        	addCollisionBoxToList(pos, bounds, list, new Axis)
-//        }
-        
         @Override
         public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos)
         {
@@ -302,23 +293,21 @@ public class ModelLoaderRegistryDebug
         	AxisAlignedBB connectorY = new AxisAlignedBB(0.5 - offset, 0, 0.5 - offset, 0.5 + offset, pixel, 0.5 + offset); 
         	AxisAlignedBB connectorZ = new AxisAlignedBB(0.5 - offset, 0.5 - offset, 0, 0.5 + offset, 0.5 + offset, pixel); 
         	List<String> connections = checkConnections(world, pos);
-        	for (EnumFacing facing : EnumFacing.values())
+        	for (String name : connections)
         	{
-        		if (connections.contains(facing.getName().toLowerCase()))
-        		{
-        			switch (facing.getAxis())
-        			{
-        			case X:
-        				bounds = bounds.union(facing.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE ? connectorX.offset(pixel * 15.0, 0, 0) : connectorX);
-        				break;
-        			case Y:
-        				bounds = bounds.union(facing.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE ? connectorY.offset(0, pixel * 15.0, 0) : connectorY);
-        				break;
-        			case Z:
-        				bounds = bounds.union(facing.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE ? connectorZ.offset(0, 0, pixel * 15.0) : connectorZ);
-        				break;
-        			}
-        		}
+        		EnumFacing facing = EnumFacing.byName(name);
+        		switch (facing.getAxis())
+    			{
+    			case X:
+    				bounds = bounds.union(facing.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE ? connectorX.offset(pixel * 15.0, 0, 0) : connectorX);
+    				break;
+    			case Y:
+    				bounds = bounds.union(facing.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE ? connectorY.offset(0, pixel * 15.0, 0) : connectorY);
+    				break;
+    			case Z:
+    				bounds = bounds.union(facing.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE ? connectorZ.offset(0, 0, pixel * 15.0) : connectorZ);
+    				break;
+    			}
         	}
         	return bounds;
         }
@@ -330,12 +319,6 @@ public class ModelLoaderRegistryDebug
         	{
         		if (world.getBlockState(pos.offset(facing)) != null && !world.isAirBlock(pos.offset(facing))) connections.add(facing.getName().toLowerCase());
         	}
-//        	if (world.getBlockState(pos.north()) != null && !world.isAirBlock(pos.north())) connections.add("north");
-//        	if (world.getBlockState(pos.south()) != null && !world.isAirBlock(pos.south())) connections.add("south");
-//        	if (world.getBlockState(pos.west()) != null && !world.isAirBlock(pos.west())) connections.add("west");
-//        	if (world.getBlockState(pos.east()) != null && !world.isAirBlock(pos.east())) connections.add("east");
-//        	if (world.getBlockState(pos.up()) != null && !world.isAirBlock(pos.up())) connections.add("up");
-//        	if (world.getBlockState(pos.down()) != null && !world.isAirBlock(pos.down())) connections.add("down");
         	return connections;
         }
         
@@ -343,8 +326,7 @@ public class ModelLoaderRegistryDebug
         public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos)
         {
         	OBJModel.OBJState objState = new OBJModel.OBJState(this.checkConnections(world, pos)).setIgnoreHidden(true);
-        	if (state.getValue(IS_WHITE)) objState.setMaterialColor("black", 0xFFFFFFFF);
-        	else objState.setMaterialColor("black", 0xFF000000);
+        	objState.setMaterialColor("black", state.getValue(IS_WHITE) ? 0xFFFFFFFF : 0xFF000000);
         	return ((IExtendedBlockState) this.state.getBaseState()).withProperty(OBJModel.OBJProperty.instance, objState);
         }
         
@@ -405,22 +387,16 @@ public class ModelLoaderRegistryDebug
     	
     	private AxisAlignedBB getBounds(EnumFacing facing)
     	{
+    		double pixel = 1.0 / 16.0;
     		switch (facing)
     		{
-    		case NORTH: return new AxisAlignedBB(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0625f);
-    		case SOUTH: return new AxisAlignedBB(0.0f, 0.0f, 0.9375f, 1.0f, 1.0f, 1.0f);
-    		case WEST: return new AxisAlignedBB(0.0f, 0.0f, 0.0f, 0.0625f, 1.0f, 1.0f);
-    		case EAST: return new AxisAlignedBB(0.9375f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-    		default: return new AxisAlignedBB(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
+    		case NORTH: return new AxisAlignedBB(0, 0, 0, 1, 1, pixel);
+    		case SOUTH: return new AxisAlignedBB(0, 0, pixel * 15, 1, 1, 1);
+    		case WEST: return new AxisAlignedBB(0, 0, 0, pixel, 1, 1);
+    		case EAST: return new AxisAlignedBB(pixel * 15, 0, 0, 1, 1, 1f);
+    		default: return new AxisAlignedBB(0, 0, 0, 1, 1, 1);
     		}
     	}
-    	
-//    	@Override
-//    	public void setBlockBoundsBasedOnState(IBlockAccess world, BlockPos pos)
-//    	{
-//    		AxisAlignedBB box = this.getBounds(world.getBlockState(pos).getValue(FACING));
-//    		setBounds((float) box.minX, (float) box.minY, (float) box.minZ, (float) box.maxX, (float) box.maxY, (float) box.maxZ);
-//    	}
     	
     	//TODO: make sure this behaves properly
     	@Override
@@ -554,7 +530,6 @@ public class ModelLoaderRegistryDebug
     	@Override
     	public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos)
     	{
-//    		OBJModel.OBJState retState = new OBJModel.OBJState(new TRSRTransformation(state.getValue(FACING)));
     		OBJModel.OBJState retState = new OBJModel.OBJState();
     		if (state.getValue(SECONDARY)) retState.setHideAllConfigs();
     		return ((IExtendedBlockState) this.state.getBaseState()).withProperty(OBJModel.OBJProperty.instance, retState);
@@ -673,7 +648,7 @@ public class ModelLoaderRegistryDebug
 					
 					if (model != null && model instanceof OBJModel)
 					{
-						FMLLog.info("Successfully obtained model from registry");
+						FMLLog.info("Successfully obtained model '%s' from registry", DIGIT.toString());
 						OBJModel objModel = new OBJModel(((OBJModel) model).getMatLib(), ((OBJModel) model).getModelLocation(), ((OBJModel) model).getCustomData());
 						OBJCustomData.GroupConfigHandler configHandler = objModel.getCustomData().getConfigHandler();
 						OBJCustomData.GroupConfigBuilder builder = configHandler.getConfigBuilder();
@@ -690,7 +665,7 @@ public class ModelLoaderRegistryDebug
 						for (int i = 0; i <= 9; i++)
 						{
 							OBJModel.OBJState state = new OBJModel.OBJState(Lists.newArrayList("" + i));
-							loadedModels.put("" + i, objModel.bake(state, Attributes.DEFAULT_BAKED_FORMAT, BAKED_TEXTURE_GETTER));
+							loadedModels.put("" + i, objModel.bake(state, Attributes.DEFAULT_BAKED_FORMAT, ModelLoader.defaultTextureGetter()));
 						}
 					}
     			}
@@ -850,6 +825,15 @@ public class ModelLoaderRegistryDebug
         }
         
         @Override
+        public boolean isOpaqueCube(IBlockState state) { return false; }
+
+        @Override
+        public boolean isFullCube(IBlockState state) { return false; }
+
+        @Override
+        public boolean isVisuallyOpaque() { return false; }
+        
+        @Override
         public IBlockState onBlockPlaced(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer)
         {
             return this.getDefaultState().withProperty(FACING, getFacingFromEntity(world, pos, placer));
@@ -864,38 +848,13 @@ public class ModelLoaderRegistryDebug
         @Override
         public int getMetaFromState(IBlockState state)
         {
-            return ((EnumFacing) state.getValue(FACING)).getIndex();
+            return state.getValue(FACING).getIndex();
         }
-        
-//        @Override
-//        @SideOnly(Side.CLIENT)
-//        public IBlockState getStateForEntityRender(IBlockState state)
-//        {
-//            return this.getDefaultState().withProperty(FACING, EnumFacing.NORTH);
-//        }
         
         @Override
         public BlockStateContainer createBlockState()
         {
-            return new ExtendedBlockState(this, new IProperty[] {FACING}, new IUnlistedProperty[] {OBJModel.OBJProperty.instance});
-        }
-        
-        @Override
-        public boolean isOpaqueCube(IBlockState state) { return false; }
-
-        @Override
-        public boolean isFullCube(IBlockState state) { return false; }
-
-        @Override
-        public boolean isVisuallyOpaque() { return false; }
-        
-        @Override
-        public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos)
-        {
-            EnumFacing facing = (EnumFacing) state.getValue(FACING);
-            TRSRTransformation transform = new TRSRTransformation(facing);
-            OBJModel.OBJState retState = new OBJModel.OBJState(transform);
-            return ((IExtendedBlockState) state).withProperty(OBJModel.OBJProperty.instance, retState);
+        	return new BlockStateContainer(this, new IProperty[] {FACING});
         }
         
         public static EnumFacing getFacingFromEntity(World worldIn, BlockPos clickedBlock, EntityLivingBase entityIn)
@@ -915,7 +874,7 @@ public class ModelLoaderRegistryDebug
                 }
             }
 
-            return entityIn.getHorizontalFacing();
+            return entityIn.getHorizontalFacing().getOpposite();
         }
     }
     
@@ -946,7 +905,7 @@ public class ModelLoaderRegistryDebug
         
         @Override
         public boolean hasTileEntity(IBlockState state) { return true; }
-        
+
         @Override
         public TileEntity createTileEntity(World worldIn, IBlockState state)
         {
@@ -1017,6 +976,81 @@ public class ModelLoaderRegistryDebug
         }
     }
     
+//    public static class OBJDynamicEyeRender extends TileEntitySpecialRenderer<OBJDynamicEyeTileEntity>
+//    {
+//    	private static IBakedModel eyeBakedModel = null;
+//    	private static final ResourceLocation EYE = new ResourceLocation(MODID.toLowerCase() + ":block/eye.obj");
+//
+//    	public static void init()
+//    	{
+//    		IResourceManager manager = Minecraft.getMinecraft().getResourceManager();
+//    		if (manager instanceof IReloadableResourceManager)
+//    		{
+//    			((IReloadableResourceManager) manager).registerReloadListener(new IResourceManagerReloadListener()
+//    			{
+//    				@Override
+//    				public void onResourceManagerReload(IResourceManager ignored)
+//    				{
+//    					eyeBakedModel = null;
+//    				}
+//    			});
+//    		}
+//    	}
+//
+//		@Override
+//		public void renderTileEntityAt(OBJDynamicEyeTileEntity te, double x, double y, double z, float partialTicks, int destroyStage)
+//		{
+//			if (eyeBakedModel == null)
+//			{
+//				FMLLog.info("eyeBakedModel was null, attempting to load model '%s'", EYE.toString());
+//
+//				try
+//				{
+//					IModel eyeModel = ModelLoaderRegistry.getModel(EYE);
+//					((OBJModel) eyeModel).getCustomData().setUseFullAtlas(true);
+//
+//					if (eyeModel != null && eyeModel instanceof OBJModel)
+//					{
+//						FMLLog.info("Successfully obtained model '%s' from registry", EYE.toString());
+//						eyeBakedModel = ((OBJModel) eyeModel).bake(TRSRTransformation.identity(), Attributes.DEFAULT_BAKED_FORMAT, ModelLoader.defaultTextureGetter());
+//					}
+//				}
+//				catch (Exception e)
+//    			{
+//    				e.printStackTrace();
+//    			}
+//
+//	    		bindTexture(TextureMap.locationBlocksTexture);
+//	    		Tessellator tessellator = Tessellator.getInstance();
+//	    		VertexBuffer buffer = tessellator.getBuffer();
+//	    		GlStateManager.pushMatrix();
+//	    		GlStateManager.translate(x, y, z);
+//
+//	    		GlStateManager.pushMatrix();
+//	    		GlStateManager.translate(0.5f, 0.5f, 0.5f);
+//	    		Vector3d teLoc = new Vector3d(te.getPos().getX(), te.getPos().getY(), te.getPos().getZ());
+//	    		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+//	    		Vector3d playerLoc = new Vector3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+//	    		Vector3d lookVec = new Vector3d();
+//	    		lookVec.sub(playerLoc, teLoc);
+//	    		double angleYaw = Math.atan2(lookVec.getZ(), lookVec.getX()) - Math.PI/2d;
+//	    		double anglePitch = Math.atan2(lookVec.getY(), Math.sqrt(lookVec.getX() * lookVec.getX() + lookVec.getZ() * lookVec.getZ()));
+//	    		GlStateManager.rotate((float)angleYaw, 0, -1, 0);
+//	    		GlStateManager.rotate((float)anglePitch, -1, 0, 0);
+//	    		GlStateManager.translate(-0.5f, -0.5f, -0.5f);
+//
+//	    		buffer.begin(GL11.GL_QUADS, Attributes.DEFAULT_BAKED_FORMAT);
+//	    		for (BakedQuad q : eyeBakedModel.getQuads(te.getWorld().getBlockState(te.getPos()), null, 0))
+//	    		{
+//	    			LightUtil.renderQuadColor(buffer, q, 0xFFFFFFFF);
+//	    		}
+//	    		tessellator.draw();
+//	    		GlStateManager.popMatrix();
+//	    		GlStateManager.popMatrix();
+//			}
+//		}
+//    }
+    
     /**
      * This block is a debug block that faces the player when placed, like a piston.
      * @author shadekiller666
@@ -1027,7 +1061,6 @@ public class ModelLoaderRegistryDebug
         public static final PropertyDirection FACING = PropertyDirection.create("facing");
         public static final OBJDirectionBlock instance = new OBJDirectionBlock();
         public static final String name = "OBJDirectionBlock";
-        public ExtendedBlockState state = new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{OBJModel.OBJProperty.instance});
         
         private OBJDirectionBlock()
         {
@@ -1061,23 +1094,13 @@ public class ModelLoaderRegistryDebug
         @Override
         public int getMetaFromState(IBlockState state)
         {
-            return ((EnumFacing) state.getValue(FACING)).getIndex();
-        }
-        
-        @Override
-        public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos)
-        {
-            //Only return an IExtendedBlockState from this method and createState(), otherwise block placement will break!
-            EnumFacing facing = (EnumFacing) state.getValue(FACING);
-            TRSRTransformation transform = new TRSRTransformation(facing);
-            OBJModel.OBJState newState = new OBJModel.OBJState(transform);
-            return ((IExtendedBlockState) state).withProperty(OBJModel.OBJProperty.instance, newState);
+        	return state.getValue(FACING).getIndex();
         }
         
         @Override
         public BlockStateContainer createBlockState()
         {
-            return new ExtendedBlockState(this, new IProperty[]{FACING}, new IUnlistedProperty[]{OBJModel.OBJProperty.instance});
+        	return new BlockStateContainer(this, new IProperty[]{FACING});
         }
         
         public static EnumFacing getFacingFromEntity(World worldIn, BlockPos clickedBlock, EntityLivingBase entityIn)

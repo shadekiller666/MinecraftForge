@@ -76,7 +76,6 @@ public class OBJCustomData
 	protected static BiMap<String, Keys> keyNameMap = HashBiMap.create(Keys.values().length);
 	protected EnumMap<Keys, Pair<Boolean, Boolean>> processUVData = Maps.<Keys, Pair<Boolean, Boolean>>newEnumMap(Keys.class);
 	protected GroupConfigHandler groupConfigHandler = new GroupConfigHandler();
-	protected ImmutableList<String> groupNames;
 	protected boolean useFullAtlas = false;
 	protected boolean hasProcessed = false;
 	protected float[][] parsedUVBounds = new float[][] {{0.0f, 0.0f}, {1.0f, 1.0f}};
@@ -99,7 +98,6 @@ public class OBJCustomData
 		ret.useFullAtlas = this.useFullAtlas;
 		ret.processUVData = Maps.newEnumMap(this.processUVData);
 		ret.groupConfigHandler = this.groupConfigHandler;
-//		ret.groupNames = ImmutableList.copyOf(this.groupNames);
 		ret.hasProcessed = this.hasProcessed;
 		return ret;
 	}
@@ -141,6 +139,12 @@ public class OBJCustomData
 	{
 		return this.groupConfigHandler.getConfig(configName);
 	}
+
+    public OBJCustomData setUseFullAtlas(boolean useFullAtlas)
+    {
+        this.useFullAtlas = useFullAtlas;
+        return this;
+    }
 	
 	public void process(ImmutableMap<String, String> customData)
 	{

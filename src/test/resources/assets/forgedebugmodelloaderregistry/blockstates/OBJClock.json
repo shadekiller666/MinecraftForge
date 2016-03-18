@@ -8,25 +8,31 @@
 		"inventory": [{
 			"transform": {
 				"firstperson_righthand": {
-					"translation": [0, 0.15, 0],
-					"rotation": {"y": -45}
+					"translation": [-0.1, 0.15, 0],
+					"scale": 0.5
 				},
 				"firstperson_lefthand": {
-					"translation": [0, 0.15, 0],
-					"rotation": {"y": -255}
+					"translation": [0.4, 0.15, 0],
+					"scale": 0.5
 				},
 				"thirdperson_righthand": {
-					"translation": [0.06, 0, -0.15],
-					"rotation": {"x": 90},
+					"translation": [-0.125, 0.1, 0.175],
 					"scale": 0.25
 				},
 				"thirdperson_lefthand": {
-					"translation": [0.06, 0, -0.15],
-					"rotation": {"x": 270},
+					"translation": [0.125, 0.1, 0.175],
+					"scale": 0.25
+				},
+				"fixed": {
+					"translation": [-0.25, 0, 0.175],
+					"scale": 0.5
+				},
+				"ground": {
+					"translation": [-0.125, 0, 0.125],
 					"scale": 0.25
 				},
 				"gui": {
-					"translation": [-0.125, 0, 0],
+					"translation": [-0.25, 0, 0],
 					"scale": 0.5
 				}
 			}

@@ -8,13 +8,7 @@
 		}		
 	},
 	"variants": {
-		"inventory": [{
-			"transform": {
-				"gui": {
-					
-				}
-			}
-		}],
+		"inventory": [{}],
 		"facing": {
 			"down": {"x": 90},
 			"up": {"x": 270},

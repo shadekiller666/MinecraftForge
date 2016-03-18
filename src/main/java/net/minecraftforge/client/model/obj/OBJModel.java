@@ -35,6 +35,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.*;
 import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
+import net.minecraftforge.common.model.IModelPart;
+import net.minecraftforge.common.model.IModelState;
+import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 import net.minecraftforge.fml.common.FMLLog;
@@ -125,7 +128,7 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
     public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter)
     {
         ImmutableMap.Builder<String, TextureAtlasSprite> builder = ImmutableMap.builder();
-        builder.put(ModelLoader.White.loc.toString(), ModelLoader.White.instance);
+        builder.put(ModelLoader.White.LOCATION.toString(), ModelLoader.White.INSTANCE);
         TextureAtlasSprite missing = bakedTextureGetter.apply(new ResourceLocation("missingno"));
         for (Map.Entry<String, Material> e : this.matLib.materials.entrySet())
         {
@@ -256,7 +259,7 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
             {
                 currentLine = objReader.readLine();
                 if (currentLine == null) break;
-                currentLine.trim();
+                currentLine = currentLine.trim();
                 if (currentLine.isEmpty() || currentLine.startsWith("#")) continue;
 
                 String[] fields = WHITE_SPACE.split(currentLine, 2);
@@ -594,7 +597,7 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
             	{
                 	currentLine = mtlReader.readLine();
                 	if (currentLine == null) break;
-                	currentLine.trim();
+                	currentLine = currentLine.trim();
                 	if (currentLine.isEmpty() || currentLine.startsWith("#")) continue;
 
                 	String[] fields = WHITE_SPACE.split(currentLine, 2);
@@ -1235,7 +1238,7 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
     	{
     		OBJState retState = new OBJState();
     		retState.shownConfigs = state.shownConfigs != null ? Lists.newArrayList(state.shownConfigs) : null;
-    		retState.materialColorMap = state.materialColorMap != null ? Maps.newHashMap(state.materialColorMap) : Maps.newHashMap();
+    		retState.materialColorMap = state.materialColorMap != null ? Maps.newHashMap(state.materialColorMap) : Maps.<String, Vector4f>newHashMap();
     		retState.ignoreHidden = state.ignoreHidden;
     		retState.parent = state.parent;
     		return retState;
@@ -1430,7 +1433,7 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
         private IModelState state;
         private Set<BakedQuad> quads;
         private ImmutableMap<String, TextureAtlasSprite> textures;
-        private TextureAtlasSprite sprite = ModelLoader.White.instance;
+        private TextureAtlasSprite sprite = ModelLoader.White.INSTANCE;
         private Map<Group, Boolean> visibilityMap = Maps.newHashMap();
         private Map<String, Vector4f> colorMap = Maps.newHashMap();
         private Map<String, Material> materials;
@@ -1533,17 +1536,18 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
         		{
         			if (this.materials.get(f.getMaterialName()).isWhite())
         			{
-        				this.sprite = ModelLoader.White.instance;
+        				this.sprite = ModelLoader.White.INSTANCE;
         			}
         			else
         			{
         				this.sprite = this.textures.get(f.getMaterialName());
         			}
-        			UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(this.format);
         			Vector3f[] defUVs = MaterialLibrary.getDefaultUVs(Pair.of(false, false));
-        			Vector3f faceNormal = f.getNormal();
-        			builder.setQuadOrientation(EnumFacing.getFacingFromVector(faceNormal.x, faceNormal.y, faceNormal.z));
-        			builder.setQuadColored();
+                    Vector3f faceNormal = f.getNormal();
+                    UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(this.format);
+                    builder.setContractUVs(true);
+                    builder.setQuadOrientation(EnumFacing.getFacingFromVector(faceNormal.x, faceNormal.y, faceNormal.z));
+                    builder.setTexture(this.sprite);
         			putVertexData(builder, f.verts[0], defUVs[0], this.sprite);
         			putVertexData(builder, f.verts[1], defUVs[1], this.sprite);
         			putVertexData(builder, f.verts[2], defUVs[2], this.sprite);
@@ -1565,25 +1569,24 @@ public class OBJModel implements IRetexturableModel, IModelCustomData, IModelSim
                         builder.put(e, v.getPos().x, v.getPos().y, v.getPos().z, v.getPos().w);
                         break;
                     case COLOR:
-                        float d = LightUtil.diffuseLight(v.getNormal().x, v.getNormal().y, v.getNormal().z);
-                        builder.put(e,
-                        		d * v.getMaterial().getColor().x,
-                        		d * v.getMaterial().getColor().y,
-                        		d * v.getMaterial().getColor().z,
-                        		v.getMaterial().getColor().w);
+                    	builder.put(e,
+                    			v.getMaterial().getColor().x,
+                    			v.getMaterial().getColor().y,
+                    			v.getMaterial().getColor().z,
+                    			v.getMaterial().getColor().w);
                         break;
                     case UV:
                     	if (this.model.customData.useFullAtlas)
                     		builder.put(e, defUV.x, defUV.y, 0, 1);
-                    	else if (sprite.equals(ModelLoader.White.instance))
+                    	else if (sprite.equals(ModelLoader.White.INSTANCE))
                     		builder.put(e,
                     				sprite.getInterpolatedU(defUV.x * 16),
                     				sprite.getInterpolatedV(defUV.y * 16),
                     				0, 1);
                     	else
                     		builder.put(e,
-                    				sprite.getInterpolatedU(v.getTextureCoordinate().x * 16),
-                    				sprite.getInterpolatedV(v.getTextureCoordinate().y * 16),
+                                    sprite.getInterpolatedU(v.getTextureCoordinate().x * 16),
+                                    sprite.getInterpolatedV(v.getTextureCoordinate().y * 16),
                     				0, 1);
                         break;
                     case NORMAL:
